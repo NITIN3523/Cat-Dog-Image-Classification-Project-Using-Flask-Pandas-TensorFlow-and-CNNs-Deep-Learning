@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='/output.css') }}"
+    />
+    <title>Cat Dog Classification</title>
+  </head>
+  <style>
+    body {
+      background-image: url("static/bg.jpg");
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-size: cover;
+    }
+  </style>
+  <body>
+    <div class="h-screen w-full flex justify-center py-5 pt-8">
+      <div class="w-full mx-[25%]">
+        <div class="text-white">
+          <h1 class="text-6xl font-bold">Cat vs Dog Classification</h1>
+          <h1 class="text-4xl font-semibold mt-5">Upload the Image</h1>
+        </div>
+        <div class="mt-5">
+          <input
+            class="block w-[80%] text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3"
+            aria-describedby="file_input_help"
+            id="upload_file"
+            type="file"
+            name="file"
+          />
+          <p
+            class="mt-1 text-sm text-gray-500 dark:text-gray-300"
+            id="file_input_help"
+          >
+            SVG, PNG, JPG, JPEG.
+          </p>
+        </div>
+        <div id="image-preview" class="my-5">
+          <h1 class="text-white font-semibold text-4xl">Uploaded Image</h1>
+          <div class="flex items-center justify-center float-left mt-3">
+            <img
+              src=""
+              alt=""
+              id="preview_image"
+            />
+            <div class="text-white text-4xl font-medium ml-5">
+              <h1 id="classification_result">{{Classification_Result}}</h1>
+              <h1 id="classification_confidence">
+                {{Classification_Confidence}}
+              </h1>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script>
+    document.getElementById('upload_file').addEventListener('change', async function(){
+
+      const file = this.files[0]
+      if(!file) return
+
+      const allowedExtension = [
+      'image/svg+xml',
+      'image/png',
+      'image/jpg',
+      'image/jpeg'
+      ]
+      if (!allowedExtension.includes(file.type)){
+        alert ('Invalid file type. Please upload an SVG, PNG, JPG or JPEG file.')
+        return
+      }
+
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const img = document.getElementById('preview_image')
+        img.src = e.target.result
+        img.alt = 'Uploaded Image'
+        img.className = 'w-[22rem] h-[22rem] mt-1'
+      }
+      reader.readAsDataURL(file)
+
+      const formdata = new FormData()
+      formdata.append('file', file)
+
+      try{
+        const response = await fetch('/',{ method: 'POST',body: formdata})
+        if(!response.ok) throw new Error('Server Error occured.')
+
+        const data = await response.json()
+        console.log(data)
+        document.getElementById('classification_result').innerText = `Result: ${data.Classification_Result}`
+        document.getElementById('classification_confidence').innerText = `Confidence: ${data.Classification_Confidence}`
+      }
+      catch(error){
+        alert('Failed to classify the image. Please try again.')
+        console.error(error)
+      }
+    })
+  </script>
+</html>
+    
